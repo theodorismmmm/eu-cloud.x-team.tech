@@ -109,6 +109,8 @@ The summary includes:
 - generated temporary password
 - WebDAV URL for Files app "Connect Server"
 
+Treat the run summary as sensitive because it contains the temporary password.
+
 Use the generated values to start the server with matching `PUBLIC_DOMAIN`, `ADMIN_USER`, and `ADMIN_PASS`.
 
 ---

@@ -21,7 +21,6 @@ jobs:
     outputs:
       domain: ${{ steps.validate.outputs.domain }}
       username: ${{ steps.creds.outputs.username }}
-      password: ${{ steps.creds.outputs.password }}
       webdav_url: ${{ steps.urls.outputs.webdav_url }}
     steps:
       - name: Validate inputs
@@ -52,8 +51,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # 8 hex chars for a short, low-collision username suffix.
           USERNAME="cloud-$(openssl rand -hex 4)"
-          PASSWORD="$(openssl rand -base64 24 | tr -d '\n' | tr '/+' 'AB' | cut -c1-24)"
+          # 36 hex chars (~144 bits entropy) for a strong temporary password.
+          PASSWORD="$(openssl rand -hex 18)"
 
           echo "::add-mask::$PASSWORD"
           echo "username=$USERNAME" >> "$GITHUB_OUTPUT"
@@ -81,9 +82,11 @@ jobs:
             echo "- WebDAV URL: \`${{ steps.urls.outputs.webdav_url }}\`"
             echo "- Web UI URL: \`${{ steps.urls.outputs.ui_url }}\`"
             echo
+            echo "> Warning: this run summary contains the temporary password. Do not share this run URL."
             echo "> For security, rotate this password after first login."
             echo
             echo "### Example server startup"
+            echo "> Tip: this command contains a plaintext password; avoid saving it in shell history."
             echo '```bash'
             echo "PUBLIC_DOMAIN=${{ steps.validate.outputs.domain }} ADMIN_USER=${{ steps.creds.outputs.username }} ADMIN_PASS='${{ steps.creds.outputs.password }}' npm start"
             echo '```'
