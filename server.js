@@ -125,7 +125,7 @@ app.use('/webdav', apiLimiter);
 // ── REST API ──────────────────────────────────────────────────────────────────
 
 /** GET /api/info – server info & connection details */
-app.get('/api/info', (req, res) => {
+app.get('/api/info', apiLimiter, (req, res) => {
   res.json({
     domain:   PUBLIC_DOMAIN,
     repoName: REPO_NAME,
@@ -137,7 +137,7 @@ app.get('/api/info', (req, res) => {
 });
 
 /** GET /api/usage – storage usage for the authenticated user */
-app.get('/api/usage', requireAuth, (req, res) => {
+app.get('/api/usage', apiLimiter, requireAuth, (req, res) => {
   const used = dirSize(req.userRoot);
   res.json({
     used,
@@ -198,8 +198,27 @@ function escapeXml(str) {
     .replace(/"/g, '&quot;');
 }
 
+/**
+ * Parse the WebDAV Destination header and return an array of decoded path segments.
+ * Handles both full URLs (http://host/webdav/foo) and raw path strings (/webdav/foo).
+ * Each segment is decoded individually to tolerate malformed percent-encoding.
+ */
+function safeDecodeDestination(destHeader) {
+  let rawPath = destHeader;
+  try {
+    rawPath = new URL(destHeader).pathname;
+  } catch (_) {
+    // Not a valid URL, use the header value as-is
+  }
+  return rawPath
+    .replace(/^\/webdav\/?/, '')
+    .split('/')
+    .filter(Boolean)
+    .map(seg => { try { return decodeURIComponent(seg); } catch (_) { return seg; } });
+}
+
 /** Mount WebDAV at /webdav */
-app.use('/webdav', requireAuth, (req, res, next) => {
+app.use('/webdav', apiLimiter, requireAuth, (req, res, next) => {
   const method = req.method.toUpperCase();
 
   // Decode URL path segments individually to avoid URIError on bare '%' chars
@@ -351,21 +370,8 @@ ${entries.join('\n')}
     const destHeader = req.headers['destination'];
     if (!destHeader) return xmlError(res, 400, 'Bad Request – missing Destination header');
 
-    let destRelPath;
-    try {
-      const destUrl  = new URL(destHeader);
-      destRelPath = decodeURIComponent(destUrl.pathname)
-        .replace(/^\/webdav\/?/, '')
-        .split('/')
-        .filter(Boolean);
-    } catch (_) {
-      destRelPath = decodeURIComponent(destHeader)
-        .replace(/^\/webdav\/?/, '')
-        .split('/')
-        .filter(Boolean);
-    }
-
-    const destFsPath = safePath(req.userRoot, destRelPath);
+    const destRelPath = safeDecodeDestination(destHeader);
+    const destFsPath  = safePath(req.userRoot, destRelPath);
     if (!destFsPath) return xmlError(res, 403, 'Forbidden');
 
     const overwrite = (req.headers['overwrite'] || 'T').toUpperCase() !== 'F';
@@ -388,21 +394,8 @@ ${entries.join('\n')}
     const destHeader = req.headers['destination'];
     if (!destHeader) return xmlError(res, 400, 'Bad Request – missing Destination header');
 
-    let destRelPath;
-    try {
-      const destUrl  = new URL(destHeader);
-      destRelPath = decodeURIComponent(destUrl.pathname)
-        .replace(/^\/webdav\/?/, '')
-        .split('/')
-        .filter(Boolean);
-    } catch (_) {
-      destRelPath = decodeURIComponent(destHeader)
-        .replace(/^\/webdav\/?/, '')
-        .split('/')
-        .filter(Boolean);
-    }
-
-    const destFsPath = safePath(req.userRoot, destRelPath);
+    const destRelPath = safeDecodeDestination(destHeader);
+    const destFsPath  = safePath(req.userRoot, destRelPath);
     if (!destFsPath) return xmlError(res, 403, 'Forbidden');
 
     const overwrite = (req.headers['overwrite'] || 'T').toUpperCase() !== 'F';

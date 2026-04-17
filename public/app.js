@@ -85,7 +85,7 @@ $('connectForm').addEventListener('submit', e => {
   // Build result box using DOM APIs to avoid XSS
   result.className = 'result-box success';
   result.classList.remove('hidden');
-  result.innerHTML = ''; // safe – we built everything with DOM APIs below
+  while (result.firstChild) result.removeChild(result.firstChild); // clear safely
 
   const addLine = (label, value) => {
     result.appendChild(el('strong', label));

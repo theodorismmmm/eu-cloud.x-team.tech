@@ -210,8 +210,9 @@ test('WebDAV PUT rejects upload that exceeds quota', async () => {
   process.env.MAX_BYTES   = String(smallQuota);
   process.env.PORT        = '0';
 
-  // Clear require cache so the module re-reads env
-  Object.keys(require.cache).forEach(k => { if (k.includes('server.js')) delete require.cache[k]; });
+  // Clear require cache so the module re-reads env (use exact path to avoid collisions)
+  const serverModulePath = require.resolve('../server.js');
+  delete require.cache[serverModulePath];
   const tinyModule = require('../server.js');
   await new Promise(res => tinyModule.server.on('listening', res));
   const tinyPort = tinyModule.server.address().port;
