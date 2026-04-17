@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eu-cloud – Your Personal Cloud Storage</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <header>
+    <div class="logo">
+      <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+      </svg>
+      <span class="logo-text">eu-cloud</span>
+    </div>
+    <nav>
+      <a href="#connect">Connect</a>
+      <a href="#how">How it works</a>
+      <a href="#ipad">iPad Setup</a>
+    </nav>
+  </header>
+
+  <!-- ── Hero ───────────────────────────────────────────────── -->
+  <section class="hero">
+    <h1>Your own cloud.<br/>100 GB. Free.</h1>
+    <p class="subtitle">Self-hosted cloud storage compatible with iPad &amp; iPhone Files app.<br/>
+       Connect via WebDAV – no third-party account needed.</p>
+    <a href="#connect" class="btn btn-primary">Get Started</a>
+  </section>
+
+  <!-- ── Storage usage card ─────────────────────────────────── -->
+  <section class="card-row">
+    <div class="card" id="usageCard">
+      <h3>Storage Usage</h3>
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progressBar" style="width:0%"></div>
+      </div>
+      <p id="usageText" class="muted">Loading…</p>
+    </div>
+
+    <div class="card">
+      <h3>Connection Details</h3>
+      <div id="infoGrid" class="info-grid">
+        <span>Protocol</span><strong>WebDAV</strong>
+        <span>WebDAV URL</span><strong id="webdavUrl">…</strong>
+        <span>Domain</span><strong id="infoDomain">…</strong>
+        <span>Repo / Bucket</span><strong id="infoRepo">…</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Connect Server form ────────────────────────────────── -->
+  <section id="connect" class="section">
+    <h2>Connect to your server</h2>
+    <p>Enter the domain and repository name of your eu-cloud instance.</p>
+
+    <form id="connectForm" class="connect-form" novalidate>
+      <label for="domain">Domain</label>
+      <input id="domain" type="text" placeholder="e.g. cloud.example.com" required />
+
+      <label for="repoName">Repository / Bucket name</label>
+      <input id="repoName" type="text" placeholder="e.g. my-cloud" required />
+
+      <label for="port">Port <span class="muted">(default 3000)</span></label>
+      <input id="port" type="number" value="3000" min="1" max="65535" />
+
+      <label for="username">Username <span class="muted">(optional – to show storage usage)</span></label>
+      <input id="username" type="text" placeholder="admin" autocomplete="username" />
+
+      <label for="password">Password <span class="muted">(optional – to show storage usage)</span></label>
+      <input id="password" type="password" autocomplete="current-password" />
+
+      <button type="submit" class="btn btn-primary">Connect</button>
+    </form>
+
+    <div id="connectResult" class="result-box hidden"></div>
+  </section>
+
+  <!-- ── How it works ───────────────────────────────────────── -->
+  <section id="how" class="section alt-bg">
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <h4>Deploy the server</h4>
+          <p>Run <code>npm start</code> or use the provided <code>docker-compose.yml</code> on your machine or VPS.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <h4>Set your domain</h4>
+          <p>Point your domain's DNS A record to your server's IP. Set <code>PUBLIC_DOMAIN</code> and <code>REPO_NAME</code> in your environment.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <h4>Connect from iPad</h4>
+          <p>Open <strong>Files</strong> → tap the <strong>…</strong> menu → <strong>Connect to Server</strong> and enter your WebDAV URL.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <h4>Upload &amp; access anywhere</h4>
+          <p>Browse, upload, download and organise up to <strong>100 GB</strong> of files directly from Files or any WebDAV client.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── iPad step-by-step ──────────────────────────────────── -->
+  <section id="ipad" class="section">
+    <h2>iPad Files "Connect Server" setup</h2>
+    <ol class="ipad-steps">
+      <li>Open the <strong>Files</strong> app on your iPad or iPhone.</li>
+      <li>Tap the <strong>⋯</strong> (three dots) button in the top-right corner of the Browse tab.</li>
+      <li>Tap <strong>Connect to Server</strong>.</li>
+      <li>In the <em>Server</em> field enter your WebDAV URL:<br/>
+          <code id="iosUrl">http://&lt;your-domain&gt;:3000/webdav</code></li>
+      <li>Tap <strong>Next</strong>, choose <em>Registered User</em>, enter your username &amp; password.</li>
+      <li>Tap <strong>Next</strong> then <strong>Connect</strong>. Your cloud drive will appear under <em>Locations</em>.</li>
+    </ol>
+  </section>
+
+  <!-- ── Footer ─────────────────────────────────────────────── -->
+  <footer>
+    <p>eu-cloud &copy; <span id="year"></span> — Self-hosted WebDAV cloud storage</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
