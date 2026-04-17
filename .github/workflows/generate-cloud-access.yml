@@ -1,0 +1,90 @@
+name: Generate Cloud Access
+
+on:
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: 'Public domain for this cloud server (for example: eu-cloud.x-team.tech)'
+        required: true
+        type: string
+      port:
+        description: 'WebDAV HTTP port'
+        required: false
+        default: '3000'
+        type: string
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      domain: ${{ steps.validate.outputs.domain }}
+      username: ${{ steps.creds.outputs.username }}
+      password: ${{ steps.creds.outputs.password }}
+      webdav_url: ${{ steps.urls.outputs.webdav_url }}
+    steps:
+      - name: Validate inputs
+        id: validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          DOMAIN="${{ inputs.domain }}"
+          PORT="${{ inputs.port }}"
+
+          if ! [[ "$DOMAIN" =~ ^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$ ]]; then
+            echo "Invalid domain: $DOMAIN"
+            echo "Expected format like eu-cloud.x-team.tech"
+            exit 1
+          fi
+
+          if ! [[ "$PORT" =~ ^[0-9]+$ ]] || [ "$PORT" -lt 1 ] || [ "$PORT" -gt 65535 ]; then
+            echo "Invalid port: $PORT"
+            exit 1
+          fi
+
+          DOMAIN_LOWER="$(echo "$DOMAIN" | tr '[:upper:]' '[:lower:]')"
+          echo "domain=$DOMAIN_LOWER" >> "$GITHUB_OUTPUT"
+          echo "port=$PORT" >> "$GITHUB_OUTPUT"
+
+      - name: Generate username and password
+        id: creds
+        shell: bash
+        run: |
+          set -euo pipefail
+          USERNAME="cloud-$(openssl rand -hex 4)"
+          PASSWORD="$(openssl rand -base64 24 | tr -d '\n' | tr '/+' 'AB' | cut -c1-24)"
+
+          echo "::add-mask::$PASSWORD"
+          echo "username=$USERNAME" >> "$GITHUB_OUTPUT"
+          echo "password=$PASSWORD" >> "$GITHUB_OUTPUT"
+
+      - name: Build URLs
+        id: urls
+        shell: bash
+        run: |
+          set -euo pipefail
+          DOMAIN="${{ steps.validate.outputs.domain }}"
+          PORT="${{ steps.validate.outputs.port }}"
+          echo "webdav_url=http://${DOMAIN}:${PORT}/webdav" >> "$GITHUB_OUTPUT"
+          echo "ui_url=http://${DOMAIN}:${PORT}" >> "$GITHUB_OUTPUT"
+
+      - name: Show generated access details
+        shell: bash
+        run: |
+          {
+            echo "## Cloud access created"
+            echo
+            echo "- Domain: \`${{ steps.validate.outputs.domain }}\`"
+            echo "- Username: \`${{ steps.creds.outputs.username }}\`"
+            echo "- Password: \`${{ steps.creds.outputs.password }}\`"
+            echo "- WebDAV URL: \`${{ steps.urls.outputs.webdav_url }}\`"
+            echo "- Web UI URL: \`${{ steps.urls.outputs.ui_url }}\`"
+            echo
+            echo "> For security, rotate this password after first login."
+            echo
+            echo "### Example server startup"
+            echo '```bash'
+            echo "PUBLIC_DOMAIN=${{ steps.validate.outputs.domain }} ADMIN_USER=${{ steps.creds.outputs.username }} ADMIN_PASS='${{ steps.creds.outputs.password }}' npm start"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
