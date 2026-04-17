@@ -1,0 +1,22 @@
+{
+  "name": "eu-cloud-x-team",
+  "version": "1.0.0",
+  "description": "Self-hosted cloud storage with WebDAV – compatible with iPad Files \"Connect Server\"",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test tests/server.test.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.5.0",
+    "basic-auth": "^2.0.1",
+    "mime-types": "^2.1.35",
+    "uuid": "^9.0.1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

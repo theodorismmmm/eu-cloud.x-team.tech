@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  eu-cloud:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - cloud-storage:/data/storage
+    environment:
+      # ── Required ───────────────────────────────────────────────────────────
+      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:-localhost}
+      REPO_NAME:     ${REPO_NAME:-my-cloud}
+      # ── Auth (change these in production!) ────────────────────────────────
+      ADMIN_USER:    ${ADMIN_USER:-admin}
+      ADMIN_PASS:    ${ADMIN_PASS:-changeme}
+      # ── Storage ────────────────────────────────────────────────────────────
+      STORAGE_DIR:   /data/storage
+      # 100 GiB = 107374182400 bytes
+      MAX_BYTES:     ${MAX_BYTES:-107374182400}
+      PORT:          3000
+
+volumes:
+  cloud-storage:
