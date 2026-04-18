@@ -90,6 +90,31 @@ npm test       # runs all tests (Node built-in test runner)
 
 ---
 
+## GitHub Action: generate username/password from a domain
+
+This repo includes a manual workflow at:
+
+- `.github/workflows/generate-cloud-access.yml`
+
+How to use it:
+
+1. Open **Actions** → **Generate Cloud Access**.
+2. Click **Run workflow**.
+3. Enter your domain (for example `eu-cloud.x-team.tech`) and optional port.
+4. After it runs, open the workflow run and check the **Summary** tab.
+
+The summary includes:
+
+- generated username
+- generated temporary password
+- WebDAV URL for Files app "Connect Server"
+
+Treat the run summary as sensitive because it contains the temporary password.
+
+Use the generated values to start the server with matching `PUBLIC_DOMAIN`, `ADMIN_USER`, and `ADMIN_PASS`.
+
+---
+
 ## License
 
 MIT
